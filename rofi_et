@@ -1,0 +1,180 @@
+#!/bin/sh
+
+ITEMS_LIMIT=15
+
+exit_on_esc () {
+  EXIT_CODE=$?
+  if [ $EXIT_CODE -ne 0 ]; then
+    sed -Ei "/#message \{/,/\}/ s/(\s*)\/\* (border.*) \*\//\1\2/" $HOME/.config/rofi/config.rasi
+    exit $EXIT_CODE
+  fi
+}
+
+run_again () {
+  if [ "$2" ]; then
+    sed -Ei "/#message \{/,/\}/ s/(\s*)\/\* (border.*) \*\//\1\2/" $HOME/.config/rofi/config.rasi
+    WORD=$(echo "$2" | rofi -dmenu -p $COMMAND -i -mesg "$1")
+    exit_on_esc
+
+    WORD_LENGTH=$(($(echo -n "$WORD" | wc -m) - 1))
+    if [ $WORD_LENGTH -gt 0 ]; then
+      NEW_WORD=$(echo -n "$WORD" | cut -c 1-$WORD_LENGTH)
+      echo "$2" | grep -w "$NEW_WORD" > /dev/null
+      IN_SUGGESTIONS=$?
+      if [ $IN_SUGGESTIONS -eq 0 ]; then
+        echo -n "$NEW_WORD" | xclip -r -selection clipboard
+        notify-send -a "rofi_et" "\"$NEW_WORD\" has been copied to clipboard"
+        exit 0
+      fi
+    fi
+  elif [ "$1" ]; then
+    sed -Ei "/#message \{/,/\}/ s/^(\s*)(border.*);{0,1}$/\1\/* \2 *\//" $HOME/.config/rofi/config.rasi
+
+    WORD=$(rofi -dmenu -p $COMMAND -i -mesg "$1" -lines 0)
+    exit_on_esc
+  else
+    WORD=$(rofi -dmenu -p $COMMAND -i)
+    exit_on_esc
+  fi
+
+  $0 "$WORD"
+  exit 0
+}
+
+ascii_to_html_entities () {
+  echo -n "$1" | sed -E "s/&[^amp\;]/\&amp\; /g"
+}
+
+get_abbreviations () {
+  ABBREVIATIONS=$(et -abr "$1" | head -n $ITEMS_LIMIT | sed 's/^/=> /')
+  ABBREVIATIONS=$(ascii_to_html_entities "$ABBREVIATIONS")
+  ABBREVIATIONS=$(
+cat << EOF
+<b><i><u>What "$1" might stand for:</u></i></b>
+$ABBREVIATIONS
+EOF
+  )
+
+  run_again "$ABBREVIATIONS"
+}
+
+get_antonyms () {
+  ANTONYMS=$(et -ant "$1")
+  run_again "<b><i>Antonyms for \"$1\":</i></b>" "$ANTONYMS"
+}
+
+define () {
+  COMMAND="spell"
+  spell $1 0
+  COMMAND="define"
+
+  DEFINITIONS=$(et -def "$1" | head -n $ITEMS_LIMIT | sed 's/^/=> /')
+  DEFINITIONS=$(ascii_to_html_entities "$DEFINITIONS")
+  DEFINITIONS=$(
+cat << EOF
+<b><i><u>Definitions for "$1":</u></i></b>
+$DEFINITIONS
+EOF
+  )
+
+  run_again "$DEFINITIONS"
+}
+
+pronounce () {
+  COMMAND="spell"
+  spell $1 0
+  COMMAND="pronounce"
+
+  et -pro $1
+}
+
+spell () {
+  SUGGESTIONS=$(et -spl "$1")
+  FOUND=$?
+  PROCEED_TO_DEFINE=$2
+  if [ $FOUND -eq 0 ]; then
+    if [ $PROCEED_TO_DEFINE -ne 0 ]; then
+      run_again "<span foreground=\"green\">\"$1\" appears to be spelled correctly</span>"
+    fi
+  else
+    MESG=$(
+cat << EOF
+<span foreground="red">"$1" doesn't appear to be spelled correctly.</span>
+<b><i>Suggestions:</i></b>
+EOF
+    )
+
+    run_again "$MESG" "$SUGGESTIONS"
+  fi
+}
+
+get_synonyms () {
+  SYNONYMS=$(et -syn "$1")
+  run_again "<b><i>Synonyms for \"$1\":</i></b>" "$SYNONYMS"
+}
+
+usage () {
+  cat << EOF
+<u>Usage (in rofi's or dmenu's input bar)</u>:
+  COMMAND [WORD]
+
+<u>Commands</u>:
+  <b><i>abr</i></b> or <b><i>abbreviations</i></b>
+    get what WORD might stand for from abbreviations.com. (WORD is required for this command)
+
+  <b><i>ant</i></b> or <b><i>antonyms</i></b>
+    get antonyms for WORD from bighugelabs.com. (WORD is required for this command)
+
+  <b><i>def</i></b> or <b><i>define</i></b>
+    get definitions for WORD from wordnik.com if correctly spelled, otherwise display spell suggestions. (WORD is required for this command)
+
+  <b><i>pro</i></b> or <b><i>pronounce</i></b>
+    play American English pronunciation of WORD from macmillandictionary.com. (WORD is required for this command)
+
+  <b><i>spl</i></b> or <b><i>spell</i></b>
+    get spell suggestions for WORD from wordlist if not spelled correctly, otherwise display a message indicating that WORD is spelled correctly. (WORD is required for this command)
+
+  <b><i>syn</i></b> or <b><i>synonyms</i></b>
+    get synonyms for WORD from bighugelabs.com. (WORD is required for this command)
+
+  <b><i>help</i></b>
+    display this help message
+EOF
+}
+
+COMMAND="query"
+
+if [ "$@" ]; then
+  COMMAND=$(echo "$@" | cut -d " " -f 1)
+  WORD=$(echo "$@" | cut -d " " -f 2)
+
+  if [ "$COMMAND" == "help" ]; then
+    run_again "$(usage)"
+  else
+    SPACE_COUNT=$(echo "$@" | tr -cd " \t" | wc -c)
+    if [ "$WORD" == "" ] || [ $SPACE_COUNT -lt 1 ]; then
+      COMMAND="query"
+      run_again "<span foreground=\"red\">You need to specifiy a command and a word</span>"
+    else
+      if [ "$COMMAND" == "abr" ] || [ "$COMMAND" == "abbreviations" ]; then
+        get_abbreviations $WORD
+      elif [ "$COMMAND" == "ant" ] || [ "$COMMAND" == "antonyms" ]; then
+        get_antonyms $WORD
+      elif [ "$COMMAND" == "def" ] || [ "$COMMAND" == "define" ]; then
+        define $WORD
+      elif [ "$COMMAND" == "pro" ] || [ "$COMMAND" == "pronounce" ]; then
+        pronounce $WORD
+      elif [ "$COMMAND" == "spl" ] || [ "$COMMAND" == "spell" ]; then
+        spell $WORD 1
+      elif [ "$COMMAND" == "syn" ] || [ "$COMMAND" == "synonyms" ]; then
+        get_synonyms $WORD
+      else
+        UNKNOWN_COMMAND=$COMMAND
+        COMMAND="query"
+        run_again "<span foreground=\"red\">Unkown command \"$UNKNOWN_COMMAND\"</span>"
+      fi
+    fi
+  fi
+else
+  run_again
+fi
