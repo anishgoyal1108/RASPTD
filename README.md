@@ -7,7 +7,7 @@ Abbreviator: https://www.youtube.com/watch?v=UNzHzZ5BITw \
 Speller: https://youtu.be/zB5Mz_X3yk8 \
 Pronouncer: https://youtu.be/DswT1v6cLJY \
 Thesaurus: https://youtu.be/hor5S_QLaEM \
-Dictionary: trust me bro \
+Dictionary: trust me bro
 
 ## Features
 
