@@ -1,8 +1,9 @@
-# et
+# Rofi Abbreviator, Speller, Pronouncer, Thesaurus, and Dictionary
 
-A CLI/rofi/dmenu script with features to aid you with English.
+A rofi GUI to help me with trivial English tasks.
 
-## Preview
+## Previews
+https://youtu.be/UNzHzZ5BITw
 
 ### rofi_et
 
