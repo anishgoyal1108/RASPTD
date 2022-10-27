@@ -3,7 +3,7 @@
 A rofi GUI to help me with trivial English tasks.
 
 ## Previews
-https://youtu.be/UNzHzZ5BITw
+[https://youtu.be/UNzHzZ5BITw](https://youtu.be/UNzHzZ5BITw)
 
 ### rofi_et
 
