@@ -3,7 +3,7 @@
 A rofi GUI to help me with trivial English tasks.
 
 ## Previews
-[https://youtu.be/UNzHzZ5BITw](https://youtu.be/UNzHzZ5BITw)
+<iframe frameborder="0" scrolling="no" marginheight="0" marginwidth="0"width="788.54" height="443" type="text/html" src="https://www.youtube.com/embed/UNzHzZ5BITw?autoplay=0&fs=0&iv_load_policy=3&showinfo=0&rel=0&cc_load_policy=0&start=0&end=0&vq=hd1080&origin=http://youtubeembedcode.com"><div><small><a href="https://youtubeembedcode.com/es/">youtubeembedcode es</a></small></div><div><small><a href="https://theimpossiblequiz.info/the-impossible-quiz-demo/">https://theimpossiblequiz.info/the-impossible-quiz-demo/</a></small></div><div><small><a href="https://youtubeembedcode.com/nl/">youtubeembedcode nl</a></small></div><div><small><a href="https://skattefrittcasino.nu/">casino utan svensk licens skattefritt</a></small></div><div><small><a href="https://youtubeembedcode.com/pl/">youtubeembedcode pl</a></small></div><div><small><a href="https://mgacasinoutansvensklicens.se/">mgacasinoutansvensklicens.se</a></small></div><div><small><a href="https://youtubeembedcode.com/en">youtubeembedcode.com/en/</a></small></div><div><small><a href="https://skattefrittcasino.com/">casino skattefritt utan spelpaus</a></small></div></iframe>
 
 ### rofi_et
 
